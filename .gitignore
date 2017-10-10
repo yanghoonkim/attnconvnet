@@ -1,2 +1,4 @@
 *.ipynb
 *.pyc
+module/batch_improved.py
+module/vocab.py

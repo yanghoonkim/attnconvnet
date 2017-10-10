@@ -11,17 +11,16 @@ TRAIN_TARGET='../rcnn/trec_train_max_20_target.npy'
 TEST_INPUT='../rcnn/trec_test_max_20.npy'
 TEST_TARGET='../rcnn/trec_test_max_20_target.npy'
 
-VALID_INPUT=None
-VALID_TARGET=None
-
 TRAIN_STEPS=200000
 
 PARAMS=basic_params
+MODEL_DIR=~/store_model/attention_sc/$PARAMS
 
 python attention_sc.py \
 	--train_input=$TRAIN_INPUT \
 	--train_target=$TRAIN_TARGET \
 	--test_input=$TEST_INPUT \
 	--test_target=$TEST_TARGET \
+	--model_dir=$MODEL_DIR \
 	--params=$PARAMS \
 	--steps=$TRAIN_STEPS
