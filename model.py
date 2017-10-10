@@ -96,10 +96,14 @@ def attn_net(features, labels, mode, params):
     # convolution 
     convout = conv_op(x, params)
     
+    channel_out = params['kernel'][-1]
+    width_out = x.get_shape().as_list()[1]  - params['stride']
+
+
     # pooling over time
-    convout = tf.reshape(convout, [-1, 19, 1, 100])
-    pooling = tf.nn.max_pool(convout, [1, 19, 1, 1], [1, 1, 1, 1], 'VALID')
-    pooling = tf.reshape(pooling, [-1, 100])
+    convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
+    pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1, 1, 1, 1], 'VALID')
+    pooling = tf.reshape(pooling, [-1, channel_out])
     
     ffn_out = ffn_op(pooling, params)
     
@@ -123,8 +127,9 @@ def attn_net(features, labels, mode, params):
         }
     
     
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
-    
+    #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
+    optimizer = tf.train.AdamOptimizer()
+
     train_op = optimizer.minimize(
         loss=loss, global_step=tf.train.get_global_step())
     
