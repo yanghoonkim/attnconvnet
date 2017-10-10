@@ -30,26 +30,38 @@ def main(unused):
         y=np.array(test_set[1]),
         num_epochs=1,
         shuffle=False)
-    
+   
     # config
-    config = tf.contrib.learn.RunConfig(model_dir = './', keep_checkpoint_max = 5)
+    config = tf.contrib.learn.RunConfig(model_dir = FLAGS.model_dir, keep_checkpoint_max = 5)
     
     # load parameters
     model_params = getattr(params, FLAGS.params)().values()
 
     # define estimator
     nn = tf.estimator.Estimator(model_fn=model.attn_net, config = config, params=model_params)
-    
-    nn.train(input_fn=train_input_fn, steps=FLAGS.steps)
+
+    # define experiment
+    exp_nn = tf.contrib.learn.Experiment(estimator = nn, 
+            train_input_fn = train_input_fn, 
+            eval_input_fn = test_input_fn,
+            train_steps = FLAGS.steps,
+            min_eval_frequency = None
+            )
+
+    # train and evaluate
+    exp_nn.train_and_evaluate()
+
+    #nn.train(input_fn=train_input_fn, steps=FLAGS.steps)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_input', type = str, default= '', help = 'Path to the training input.')
-    parser.add_argument('--train_target', type = str, default = '', help = 'Path to the training target.')
-    parser.add_argument('--test_input', type = str, default = '', help = 'Path to the test input.') 
-    parser.add_argument('--test_target', type = str, default = '', help = 'Path to the test target.')
-    parser.add_argument('--params', type = str, help = 'Parameter setting')
-    parser.add_argument('--steps', type = int, default = 200000, help = 'Training step size')
+    parser.add_argument('--train_input', type = str, default= '', help = 'path to the training input.')
+    parser.add_argument('--train_target', type = str, default = '', help = 'path to the training target.')
+    parser.add_argument('--test_input', type = str, default = '', help = 'path to the test input. ')
+    parser.add_argument('--test_target', type = str, default = '', help = 'path to the test target.')
+    parser.add_argument('--model_dir', type = str, help = 'path to save the model')
+    parser.add_argument('--params', type = str, help = 'parameter setting')
+    parser.add_argument('--steps', type = int, default = 200000, help = 'training step size')
     FLAGS = parser.parse_args()
     tf.app.run(main)
     
