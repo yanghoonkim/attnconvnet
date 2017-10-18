@@ -14,9 +14,9 @@ TEST_TARGET='../rcnn/trec_test_max_20_target.npy'
 TRAIN_STEPS=200000
 
 PARAMS=basic_params
-MODEL_DIR=~/store_model/attention_sc/$PARAMS
+MODEL_DIR=~/attentionnet/store_model/$PARAMS
 
-python attention_sc.py \
+python main.py \
 	--train_input=$TRAIN_INPUT \
 	--train_target=$TRAIN_TARGET \
 	--test_input=$TEST_INPUT \
