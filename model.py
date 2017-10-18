@@ -1,5 +1,5 @@
 import sys
-sys.path.append('module/')
+sys.path.append('submodule/')
 
 import numpy as np
 import tensorflow as tf
@@ -119,7 +119,7 @@ def attn_net(features, labels, mode, params):
             mode=mode,
             predictions={"sentiment": predictions})
     
-    loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = softmax_out)
+    loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = ffn_out)
     
     # accuracy as evaluation metric
     eval_metric_ops = { 
