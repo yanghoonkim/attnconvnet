@@ -30,7 +30,7 @@ def attn_net(features, labels, mode, params):
         g = lambda x, y, z : tf.tanh(tf.matmul(x, y) + z)
 
         out = x
-        if type(params['ffn_size']) == None:
+        if params['ffn_size'] == None:
             layers = [params['label_size']]
         elif type(params['ffn_size']) == int:
             layers = [params['ffn_size'], params['label_size']]
@@ -41,7 +41,7 @@ def attn_net(features, labels, mode, params):
         b_ffn = list()
         for i, layer in enumerate(layers):
             if i==0:
-                w_ffn.append(tf.get_variable('w_ffn{}'.format(i), [params['hidden_size'], layer], params['dtype']))
+                w_ffn.append(tf.get_variable('w_ffn{}'.format(i), [params['kernel'][-1], layer], params['dtype']))
                 b_ffn.append(tf.get_variable('b_ffn{}'.format(i), [layer], params['dtype']))
             else:
                 w_ffn.append(tf.get_variable('w_ffn{}'.format(i), [layers[i-1], layer], params['dtype']))
@@ -97,7 +97,8 @@ def attn_net(features, labels, mode, params):
     convout = conv_op(x, params)
     
     channel_out = params['kernel'][-1]
-    width_out = x.get_shape().as_list()[1]  - params['stride']
+    # width_out = (feature_length - windows_size)/stride + 1
+    width_out = (x.get_shape().as_list()[1] - params['kernel'][0])/params['stride'] + 1
 
 
     # pooling over time
@@ -116,9 +117,10 @@ def attn_net(features, labels, mode, params):
     # Provide an estimator spec for `ModeKeys.PREDICT`.
     if mode == tf.estimator.ModeKeys.PREDICT:
         return tf.estimator.EstimatorSpec(
-            mode=mode,
-            predictions={"sentiment": predictions})
-    
+                mode=mode,
+                predictions={"sentiment": predictions})
+    labels = tf.cast(labels, tf.int32)
+    labels = tf.one_hot(labels, params['label_size']) 
     loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = ffn_out)
     
     # accuracy as evaluation metric
