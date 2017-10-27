@@ -19,6 +19,7 @@ def attn_net(features, labels, mode, params):
     
     def embed_op(inputs, params):
         embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
+        tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
 
     def conv_op(embd_inp, params):
@@ -122,6 +123,7 @@ def attn_net(features, labels, mode, params):
     labels = tf.cast(labels, tf.int32)
     labels = tf.one_hot(labels, params['label_size']) 
     loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = ffn_out)
+    tf.summary.scalar('loss', loss)
     
     # accuracy as evaluation metric
     eval_metric_ops = { 
@@ -132,8 +134,14 @@ def attn_net(features, labels, mode, params):
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
     optimizer = tf.train.AdamOptimizer()
 
-    train_op = optimizer.minimize(
-        loss=loss, global_step=tf.train.get_global_step())
+    #train_op = optimizer.minimize(
+        #loss=loss, global_step=tf.train.get_global_step())
+    grad_and_var = optimizer.compute_gradients(loss, tf.trainable_variables())
+    
+    # add histogram summary for gradient
+    for grad, var in grad_and_var:
+        tf.summary.histogram(var.name + '/gradient', grad)
+    train_op = optimizer.apply_gradients(grad_and_var, global_step = tf.train.get_global_step())
     
     return tf.estimator.EstimatorSpec(
         mode=mode,
