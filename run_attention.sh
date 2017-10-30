@@ -7,15 +7,15 @@
 #!/bin/bash
 MODE='train'
 
-TRAIN_INPUT='data/trec/processed/trec_train_max_20.npy'
-TRAIN_TARGET='data/trec/processed/trec_train_max_20_target.npy'
-TEST_INPUT='data/trec/processed/trec_test_max_20.npy'
-TEST_TARGET='data/trec/processed/trec_test_max_20_target.npy'
+TRAIN_INPUT='data/trec/processed/trec_train.npy'
+TRAIN_TARGET='data/trec/processed/trec_train_target.npy'
+TEST_INPUT='data/trec/processed/trec_test.npy'
+TEST_TARGET='data/trec/processed/trec_test_target.npy'
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
 
-PARAMS=basic_params
+PARAMS=test_params
 MODEL_DIR=~/attentionnet/store_model/$PARAMS
 
 python main.py \
