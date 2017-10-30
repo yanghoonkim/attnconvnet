@@ -59,14 +59,14 @@ def main(unused):
             train_input_fn = train_input_fn, 
             eval_input_fn = eval_input_fn,
             train_steps = FLAGS.steps,
-            min_eval_frequency = 500)
+            min_eval_frequency = 300)
 
     # train and evaluate
     if FLAGS.mode == 'train':
         exp_nn.train_and_evaluate()
     
     elif FLAGS.mode == 'eval':
-        exp_nn.evaluate()
+        exp_nn.evaluate(delay_secs = 0)
 
     
 if __name__ == '__main__':
