@@ -7,10 +7,10 @@
 #!/bin/bash
 MODE='train'
 
-TRAIN_INPUT='data/trec/processed/trec_train.npy'
-TRAIN_TARGET='data/trec/processed/trec_train_label.npy'
-TEST_INPUT='data/trec/processed/trec_test.npy'
-TEST_TARGET='data/trec/processed/trec_test_label.npy'
+TRAIN_INPUT='data/sst/processed_git/sst5_train.npy'
+TRAIN_TARGET='data/sst/processed_git/sst5_train_label.npy'
+TEST_INPUT='data/sst/processed_git/sst5_test.npy'
+TEST_TARGET='data/sst/processed_git/sst5_test_label.npy'
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
