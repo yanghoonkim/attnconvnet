@@ -49,10 +49,10 @@ def test_params():
         # attention network parameters
         num_layers = 1,
         num_heads =10,
-        attn_dropout = 0.1,
-        residual_dropout = 0.1,
+        attn_dropout = 0.0,
+        residual_dropout = 0.0,
         relu_dropout = 0.0,
-        filter_size = 150,
+        filter_size = 128,
         
         # convolution parameters
         kernel = [10, hidden, 30], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]

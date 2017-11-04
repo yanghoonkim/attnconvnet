@@ -8,9 +8,9 @@
 MODE='train'
 
 TRAIN_INPUT='data/trec/processed/trec_train.npy'
-TRAIN_TARGET='data/trec/processed/trec_train_target.npy'
+TRAIN_TARGET='data/trec/processed/trec_train_label.npy'
 TEST_INPUT='data/trec/processed/trec_test.npy'
-TEST_TARGET='data/trec/processed/trec_test_target.npy'
+TEST_TARGET='data/trec/processed/trec_test_label.npy'
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
