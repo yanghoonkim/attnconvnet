@@ -35,7 +35,7 @@ def basic_params():
 # trec: up to 0.876, maxlength20, voca 8414
 def basic_1():
     return hparams
-hidden = 50
+hidden = 300
 def test_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
@@ -52,10 +52,10 @@ def test_params():
         attn_dropout = 0.0,
         residual_dropout = 0.0,
         relu_dropout = 0.0,
-        filter_size = 128,
+        filter_size = 600,
         
         # convolution parameters
-        kernel = [10, hidden, 30], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]
+        kernel = [10, hidden, 300], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]
         stride = 1,
         conv_pad = 'VALID', # 'VALID' or 'SAME'
         
