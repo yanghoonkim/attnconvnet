@@ -18,7 +18,9 @@ def attn_net(features, labels, mode, params):
             y, 1.0 - params['residual_dropout']))
     
     def embed_op(inputs, params):
-        embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
+        #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
+        glove = np.load('data/glove_trec_vocab.npy')
+        embedding = tf.Variable(glove, trainable = False, name = 'embedding', dtype = tf.float32)
         tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
 
