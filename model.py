@@ -20,7 +20,7 @@ def attn_net(features, labels, mode, params):
     def embed_op(inputs, params):
         #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
         glove = np.load('data/glove_trec_vocab.npy')
-        embedding = tf.Variable(glove, trainable = False, name = 'embedding', dtype = tf.float32)
+        embedding = tf.Variable(glove, trainable = True, name = 'embedding', dtype = tf.float32)
         tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
 
