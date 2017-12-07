@@ -16,7 +16,7 @@ TRAIN_STEPS=200000
 NUM_EPOCHS=None
 
 PARAMS=test_params
-MODEL_DIR=~/attentionnet/store_model/$PARAMS
+MODEL_DIR=~/work/attentionnet/store_model/$PARAMS
 
 python main.py \
 	--mode=$MODE \
