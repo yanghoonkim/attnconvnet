@@ -40,7 +40,7 @@ def test_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
         dtype = tf.float32,
-        voca_size = 16581,
+        voca_size = 16560,
         label_size = 5, 
         hidden_size = hidden,
         value_depth = hidden,
@@ -48,14 +48,14 @@ def test_params():
         
         # attention network parameters
         num_layers = 1,
-        num_heads =5,
-        attn_dropout = 0.0,
-        residual_dropout = 0.0,
-        relu_dropout = 0.0,
+        num_heads =10,
+        attn_dropout = 0.1,
+        residual_dropout = 0.1,
+        relu_dropout = 0.1,
         filter_size = 100,
         
         # convolution parameters
-        kernel = [20, hidden, 30], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]
+        kernel = [10, hidden, 30], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]
         stride = 1,
         conv_pad = 'VALID', # 'VALID' or 'SAME'
         
@@ -63,7 +63,7 @@ def test_params():
         ffn_size = None,
         
         # learning parameters
-        batch_size = 100,
-        learning_rate = 0.1
+        batch_size = 150,
+        learning_rate = 0.03
         
     )
