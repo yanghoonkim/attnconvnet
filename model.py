@@ -15,7 +15,7 @@ def attn_net(features, labels, mode, params):
     
     def residual_fn(x, y):
         return cl.layer_norm(x + tf.nn.dropout(
-            y, 1.0 - params['residual_dropout']))
+            y, 1.0 - params['residual_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1))
     
     def embed_op(inputs, params):
         #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
@@ -65,7 +65,7 @@ def attn_net(features, labels, mode, params):
             x,
             params['filter_size'],
             params['hidden_size'],
-            dropout=params['relu_dropout'])
+            dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1)
 
     inputs = features['x']
     
@@ -86,7 +86,7 @@ def attn_net(features, labels, mode, params):
                 total_value_depth = params['value_depth'],
                 output_depth = params['hidden_size'],
                 num_heads = params['num_heads'],
-                dropout_rate = params['attn_dropout'],
+                dropout_rate = params['attn_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1,
                 summaries = False,
                 image_shapes = None,
                 name = None
