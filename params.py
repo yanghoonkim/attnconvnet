@@ -35,24 +35,24 @@ def basic_params():
 # trec: up to 0.876, maxlength20, voca 8414
 def basic_1():
     return hparams
-hidden = 50
+hidden = 20
 def test_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
         dtype = tf.float32,
-        voca_size = 8680,
-        label_size = 6, 
+        voca_size = 4674,
+        label_size = 7, 
         hidden_size = hidden,
         value_depth = hidden,
         bucket_sizes = [10, 20, 30, 40, 50],
         
         # attention network parameters
-        num_layers = 1,
-        num_heads =10,
-        attn_dropout = 0.0,
-        residual_dropout = 0.0,
-        relu_dropout = 0.0,
-        filter_size = 128,
+        num_layers = 3,
+        num_heads =2,
+        attn_dropout = 0.1,
+        residual_dropout = 0.1,
+        relu_dropout = 0.1,
+        filter_size = 64,
         
         # convolution parameters
         kernel = [10, hidden, 30], # kernel shape for tf.nn.conv1d, [filter_width, in_channels, out_channels]
@@ -64,6 +64,6 @@ def test_params():
         
         # learning parameters
         batch_size = 20,
-        learning_rate = 0.01
+        learning_rate = 0.02
         
     )

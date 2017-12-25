@@ -19,8 +19,8 @@ def attn_net(features, labels, mode, params):
     
     def embed_op(inputs, params):
         #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
-        glove = np.load('data/glove_trec_vocab.npy')
-        embedding = tf.Variable(glove, trainable = True, name = 'embedding', dtype = tf.float32)
+        glove = np.load('data/semeval/processed/glove840b_semeval1_4_vocab300.npy')
+        embedding = tf.Variable(glove, trainable = False, name = 'embedding', dtype = tf.float32)
         tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
 
@@ -65,14 +65,14 @@ def attn_net(features, labels, mode, params):
             x,
             params['filter_size'],
             params['hidden_size'],
-            dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1)
+            dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 0)
 
     inputs = features['x']
     
     # raw input to embedded input of shape [batch, length, embedding_size]
     embd_inp = embed_op(inputs, params)
 
-    x = embd_inp
+    x = tf.layers.dense(embd_inp, params['hidden_size'], activation = tf.tanh, use_bias = True)
     
 
     for layer in xrange(params['num_layers']):
@@ -86,7 +86,7 @@ def attn_net(features, labels, mode, params):
                 total_value_depth = params['value_depth'],
                 output_depth = params['hidden_size'],
                 num_heads = params['num_heads'],
-                dropout_rate = params['attn_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1,
+                dropout_rate = params['attn_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 0,
                 summaries = False,
                 image_shapes = None,
                 name = None
@@ -129,7 +129,9 @@ def attn_net(features, labels, mode, params):
     
     # accuracy as evaluation metric
     eval_metric_ops = { 
-        'accuracy' : tf.metrics.accuracy(tf.argmax(labels, -1), predictions)
+        'accuracy' : tf.metrics.accuracy(tf.argmax(labels, -1), predictions),
+        'pearson_all' : tf.contrib.metrics.streaming_pearson_correlation(softmax_out, tf.cast(labels, tf.float32)),
+        'pearson_some' : tf.contrib.metrics.streaming_pearson_correlation(tf.cast(predictions, tf.float32), tf.cast(tf.argmax(labels, -1), tf.float32))
         }
     
     
