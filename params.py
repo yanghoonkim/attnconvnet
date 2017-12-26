@@ -40,8 +40,8 @@ def test_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
         dtype = tf.float32,
-        voca_size = 4674,
-        label_size = 7, 
+        voca_size = 13376,
+        label_size = 1, 
         hidden_size = hidden,
         value_depth = hidden,
         bucket_sizes = [10, 20, 30, 40, 50],
@@ -60,7 +60,7 @@ def test_params():
         conv_pad = 'VALID', # 'VALID' or 'SAME'
         
         # fully connected network parameters
-        ffn_size = None,
+        ffn_size = None, # list of scalars
         
         # learning parameters
         batch_size = 20,
