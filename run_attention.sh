@@ -7,10 +7,10 @@
 #!/bin/bash
 MODE='train'
 
-TRAIN_INPUT='data/semeval/processed/voc_train.npy'
-TRAIN_TARGET='data/semeval/processed/voc_train_label.npy'
-TEST_INPUT='data/semeval/processed/voc_test.npy'
-TEST_TARGET='data/semeval/processed/voc_test_label.npy'
+TRAIN_INPUT='data/semeval/processed/ec_train.npy'
+TRAIN_TARGET='data/semeval/processed/ec_train_label.npy'
+TEST_INPUT='data/semeval/processed/ec_test.npy'
+TEST_TARGET='data/semeval/processed/ec_test_label.npy'
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
