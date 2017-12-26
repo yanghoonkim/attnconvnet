@@ -19,7 +19,7 @@ def attn_net(features, labels, mode, params):
     
     def embed_op(inputs, params):
         #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
-        glove = np.load('data/semeval/processed/glove840b_semeval1_4_vocab300.npy')
+        glove = np.load('data/semeval/processed/glove840b_semeval1_5_vocab300.npy')
         embedding = tf.Variable(glove, trainable = False, name = 'embedding', dtype = tf.float32)
         tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
@@ -30,29 +30,15 @@ def attn_net(features, labels, mode, params):
         return convout
 
     def ffn_op(x, params):
-        g = lambda x, y, z : tf.tanh(tf.matmul(x, y) + z)
-
         out = x
         if params['ffn_size'] == None:
-            layers = [params['label_size']]
-        elif type(params['ffn_size']) == int:
-            layers = [params['ffn_size'], params['label_size']]
-        else: # list
-            layers = params['ffn_size'] + [params['label_size']]
+            ffn_size = []
+        else:
+            ffn_size = params['ffn_size']
+        for unit_size in ffn_size[:-1]:
+            out = tf.layers.dense(out, unit_size, activation = tf.tanh, use_bias = True)
+        return tf.layers.dense(out, params['label_size'], activation = None, use_bias = True)
 
-        w_ffn = list()
-        b_ffn = list()
-        for i, layer in enumerate(layers):
-            if i==0:
-                w_ffn.append(tf.get_variable('w_ffn{}'.format(i), [params['kernel'][-1], layer], params['dtype']))
-                b_ffn.append(tf.get_variable('b_ffn{}'.format(i), [layer], params['dtype']))
-            else:
-                w_ffn.append(tf.get_variable('w_ffn{}'.format(i), [layers[i-1], layer], params['dtype']))
-                b_ffn.append(tf.get_variable('b_ffn{}'.format(i), [layer], params['dtype']))
-            out = g(out, w_ffn[i], b_ffn[i])
-
-        return out
-    
     def transformer_ffn_layer(x, params):
         """Feed-forward layer in the transformer.
         Args:
@@ -95,26 +81,29 @@ def attn_net(features, labels, mode, params):
         # fully connected network
         # [batch, length, hparams.ffn_size]
         x = residual_fn(x, transformer_ffn_layer(x, params))
-        
-    # convolution 
-    convout = conv_op(x, params)
+
+    logit_list = list()   
+    for i in range(11):
+        with tf.variable_scope(None, default_name = 'class'):
+            # convolution 
+            convout = conv_op(x, params)
     
-    channel_out = params['kernel'][-1]
-    # width_out = (feature_length - windows_size)/stride + 1
-    width_out = (x.get_shape().as_list()[1] - params['kernel'][0])/params['stride'] + 1
+            channel_out = params['kernel'][-1]
+            # width_out = (feature_length - windows_size)/stride + 1
+            width_out = (x.get_shape().as_list()[1] - params['kernel'][0])/params['stride'] + 1
 
 
-    # pooling over time
-    convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
-    pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1, 1, 1, 1], 'VALID')
-    pooling = tf.reshape(pooling, [-1, channel_out])
+            # pooling over time
+            convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
+            pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1, 1, 1, 1], 'VALID')
+            pooling = tf.reshape(pooling, [-1, channel_out])
     
-    ffn_out = ffn_op(pooling, params)
-    
-    softmax_out = tf.nn.softmax(ffn_out)
-    
-    predictions = tf.argmax(softmax_out, axis = -1)
-    
+            ffn_out = ffn_op(pooling, params)
+
+            logit_list.append(ffn_out)
+    logit_list = tf.concat(logit_list, axis = -1)
+    predictions = tf.cast(tf.round(tf.sigmoid(logit_list)), tf.int32)
+    #predictions = tf.Print(predictions, [predictions], message = '----------This is a :', summarize = 300)
     
     
     # Provide an estimator spec for `ModeKeys.PREDICT`.
@@ -122,18 +111,27 @@ def attn_net(features, labels, mode, params):
         return tf.estimator.EstimatorSpec(
                 mode=mode,
                 predictions={"sentiment": predictions})
-    labels = tf.cast(labels, tf.int32)
-    labels = tf.one_hot(labels, params['label_size']) 
-    loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = ffn_out)
-    tf.summary.scalar('loss', loss)
-    
+
     # accuracy as evaluation metric
-    eval_metric_ops = { 
-        'accuracy' : tf.metrics.accuracy(tf.argmax(labels, -1), predictions),
-        'pearson_all' : tf.contrib.metrics.streaming_pearson_correlation(softmax_out, tf.cast(labels, tf.float32)),
-        'pearson_some' : tf.contrib.metrics.streaming_pearson_correlation(tf.cast(predictions, tf.float32), tf.cast(tf.argmax(labels, -1), tf.float32))
+    def accuracy4multilabel(labels, predictions):
+        labels = tf.cast(labels, tf.int32)
+        #labels = tf.Print(labels, [labels], message = 'labels:::', summarize = 300)
+        numerator = tf.reduce_sum(tf.cast(tf.multiply(predictions, labels), tf.float32), axis = -1)
+        numerator = tf.Print(numerator, [numerator], message = 'numerator :::', summarize = 300)
+        print '------------------------------'
+        print numerator.get_shape().as_list()
+        denominator = tf.cast(tf.reduce_sum(predictions + labels, axis = -1), tf.float32) - numerator
+        denominator = tf.Print(denominator, [denominator], message = 'denominator :::', summarize = 300) + 0.000001
+        accuracy = tf.divide(numerator, denominator) + 0.000001
+        mean, op = tf.metrics.mean(accuracy)
+
+        return mean, op
+    eval_metric_ops = {
+            'accuracy' : accuracy4multilabel(labels, predictions) 
         }
     
+    loss = tf.losses.sigmoid_cross_entropy(labels, logit_list)
+    tf.summary.scalar('loss', loss)
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
     optimizer = tf.train.AdamOptimizer()
