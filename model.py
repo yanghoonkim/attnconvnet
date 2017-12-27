@@ -7,7 +7,17 @@ import tensorflow as tf
 import common_attention as ca
 import common_layers as cl
 
+# Evaluation metric for multi-label situation
+def accuracy4multilabel(labels, predictions):
+    numerator = tf.reduce_sum(tf.cast(tf.multiply(predictions, labels), tf.float32), axis = -1)
+    denominator = tf.cast(tf.reduce_sum(predictions + labels, axis = -1), tf.float32) - numerator + 0.000001
+    accuracy = tf.divide(numerator, denominator)
+    mean, op = tf.metrics.mean(accuracy)
+    return mean, op
+
+
 def attn_net(features, labels, mode, params):
+    labels = tf.cast(labels, tf.int32)
     hidden_size = params['hidden_size']
     voca_size = params['voca_size']
     bucket_sizes = params['bucket_sizes']
@@ -18,9 +28,12 @@ def attn_net(features, labels, mode, params):
             y, 1.0 - params['residual_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 1))
     
     def embed_op(inputs, params):
-        #embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
-        glove = np.load('data/semeval/processed/glove840b_semeval1_5_vocab300.npy')
-        embedding = tf.Variable(glove, trainable = False, name = 'embedding', dtype = tf.float32)
+        if params['embedding'] == None:
+            embedding = tf.get_variable('embedding', [params['voca_size'], params['hidden_size']], dtype = params['dtype'])
+        else:
+            glove = np.load(params['embedding'])
+            embedding = tf.Variable(glove, trainable = params['embedding_trainable'], name = 'embedding', dtype = tf.float32)
+
         tf.summary.histogram(embedding.name + '/value', embedding)
         return tf.nn.embedding_lookup(embedding, inputs)
 
@@ -55,11 +68,12 @@ def attn_net(features, labels, mode, params):
 
     inputs = features['x']
     
-    # raw input to embedded input of shape [batch, length, embedding_size]
+    # raw input to embedded input of shape [batch, length, hidden_size]
     embd_inp = embed_op(inputs, params)
-
-    x = tf.layers.dense(embd_inp, params['hidden_size'], activation = tf.tanh, use_bias = True)
-    
+    if params['hidden_size'] != embd_inp.get_shape().as_list()[-1]:
+        x = tf.layers.dense(embd_inp, params['hidden_size'], activation = tf.tanh, use_bias = True)
+    else:
+        x = embd_inp
 
     for layer in xrange(params['num_layers']):
         x = residual_fn(
@@ -82,8 +96,8 @@ def attn_net(features, labels, mode, params):
         # [batch, length, hparams.ffn_size]
         x = residual_fn(x, transformer_ffn_layer(x, params))
 
-    logit_list = list()   
-    for i in range(11):
+    logits = list()   
+    for i in range(params['multi_label']):
         with tf.variable_scope(None, default_name = 'class'):
             # convolution 
             convout = conv_op(x, params)
@@ -100,11 +114,30 @@ def attn_net(features, labels, mode, params):
     
             ffn_out = ffn_op(pooling, params)
 
-            logit_list.append(ffn_out)
-    logit_list = tf.concat(logit_list, axis = -1)
-    predictions = tf.cast(tf.round(tf.sigmoid(logit_list)), tf.int32)
-    #predictions = tf.Print(predictions, [predictions], message = '----------This is a :', summarize = 300)
-    
+            logits.append(ffn_out)
+
+    # predictions, loss and eval_metric 
+    if len(logits) == 1:
+        # single label classification
+        logits = logits[0]
+        softmax_out = tf.nn.softmax(logits)
+        predictions = tf.argmax(softmax_out, axis = -1)
+        labels = tf.one_hot(labels, params['label_size'])
+        loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = logits)
+        eval_metric_ops = {
+                'accuracy' : tf.metrics.accuracy(tf.argmax(labels, -1), predictions = predictions),
+                'pearson_all' : tf.contrib.metrics.streaming_pearson_correlation(softmax_out, tf.cast(labels, tf.float32)),
+                'pearson_some' : tf.contrib.metrics.streaming_pearson_correlation(tf.cast(predictions, tf.float32), tf.cast(tf.argmax(labels, -1), tf.float32))
+                }
+    else: 
+        # multi label classification
+        logits = tf.concat(logits, axis = -1)
+        predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
+        eval_metric_ops = {
+                'accuracy' : accuracy4multilabel(labels, predictions)
+                }
+        loss = tf.losses.sigmoid_cross_entropy(labels, logits)
+    tf.summary.scalar('loss', loss)
     
     # Provide an estimator spec for `ModeKeys.PREDICT`.
     if mode == tf.estimator.ModeKeys.PREDICT:
@@ -112,25 +145,6 @@ def attn_net(features, labels, mode, params):
                 mode=mode,
                 predictions={"sentiment": predictions})
 
-    # accuracy as evaluation metric
-    def accuracy4multilabel(labels, predictions):
-        labels = tf.cast(labels, tf.int32)
-        #labels = tf.Print(labels, [labels], message = 'labels:::', summarize = 300)
-        numerator = tf.reduce_sum(tf.cast(tf.multiply(predictions, labels), tf.float32), axis = -1)
-        numerator = tf.Print(numerator, [numerator], message = 'numerator :::', summarize = 300)
-        print '------------------------------'
-        print numerator.get_shape().as_list()
-        denominator = tf.cast(tf.reduce_sum(predictions + labels, axis = -1), tf.float32) - numerator
-        denominator = tf.Print(denominator, [denominator], message = 'denominator :::', summarize = 300) + 0.000001
-        accuracy = tf.divide(numerator, denominator) + 0.000001
-        mean, op = tf.metrics.mean(accuracy)
-
-        return mean, op
-    eval_metric_ops = {
-            'accuracy' : accuracy4multilabel(labels, predictions) 
-        }
-    
-    loss = tf.losses.sigmoid_cross_entropy(labels, logit_list)
     tf.summary.scalar('loss', loss)
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
