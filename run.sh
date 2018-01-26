@@ -77,12 +77,14 @@ sem5emo(){
 	TRAIN_TARGET='data/semeval/processed/ec_train_emo_label_unlabel.npy'
 	DEV_INPUT='data/semeval/processed/ec_dev_emo_unlabel.npy'
 	DEV_TARGET='data/semeval/processed/ec_dev_emo_label_unlabel.npy'
-	TEST_INPUT='data/semeval/processed/ec_mass.npy'
+	TEST_INPUT='data/semeval/processed/ec_test_emo_unlabel.npy'
+	#TEST_INPUT='data/semeval/processed/ec_mass.npy'
 	#TEST_ORIGIN='data/semeval/2018-E-c-En-dev.txt'
-	#TEST_ORIGIN='data/semeval/2018-E-c-EN-test.txt'
-	TEST_ORIGIN='data/semeval/SemEval2018-AIT-DISC-tweets2_max40.txt'
-	#PRED_DIR='result/sem5/E-C_en_pred.txt'
-	PRED_DIR='result/sem5/mass39k.txt'
+	TEST_ORIGIN='data/semeval/2018-E-c-En-test-emo.txt'
+	#TEST_ORIGIN='data/semeval/SemEval2018-AIT-DISC-tweets2_max40.txt'
+	PRED_DIR='result/sem5/E-C_en_pred.txt'
+	#PRED_DIR='result/sem5/mass39k.txt'
+	PROB_DIR='result/sem5/E-C_en_prob.txt'
 	PARAMS=sem5_emo
 }
 
@@ -105,6 +107,7 @@ python main.py \
 	--test_data=$TEST_INPUT \
 	--model_dir=$MODEL_DIR \
 	--pred_dir=$PRED_DIR \
+	--prob_dir=$PROB_DIR \
 	--test_origin=$TEST_ORIGIN \
 	--params=$PARAMS \
 	--steps=$TRAIN_STEPS\
