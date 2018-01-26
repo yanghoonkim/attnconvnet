@@ -186,12 +186,13 @@ def attn_net(features, labels, mode, params):
         # multi label classification
         logits = tf.concat(logits, axis = -1)
         #predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
-        predictions = tf.to_int32(tf.sigmoid(logits)>0.5)
+        prob = tf.sigmoid(logits)
+        predictions = tf.to_int32(prob>0.5)
         # Provide an estimator spec for 'Modekeys.PREDICT'
         if mode == tf.estimator.ModeKeys.PREDICT:
             return tf.estimator.EstimatorSpec(
                     mode = mode,
-                    predictions = {"sentiment" : predictions})
+                    predictions = {"probability" : prob, "sentiment" : predictions})
         labels = tf.cast(labels, tf.int32)
         eval_metric_ops = {
                 'accuracy' : accuracy4multilabel(labels, predictions)

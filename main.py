@@ -40,17 +40,22 @@ def write_sem5(predict_results):
         lines = f.readlines()
 
     with open(FLAGS.pred_dir, 'w') as f:
-        f.write('ID\tTweet\tanger\tanticipation\tdisgust\tfear\tjoy\tlove\toptimism\tpessimism\tsadness\tsurprise\ttrust\n')
-        while True:
-            try : 
-                output = predict_results.next()
-                # rstrip for remove '\n' for some data
-                line_concat = '\t'.join(lines[i].split('\t')[:2]).rstrip() + '\t' + '\t'.join(output['sentiment'].astype(str)) + '\n'
-                f.write(line_concat)
-                i += 1
+        with open(FLAGS.prob_dir, 'w') as f1:
+            f.write('ID\tTweet\tanger\tanticipation\tdisgust\tfear\tjoy\tlove\toptimism\tpessimism\tsadness\tsurprise\ttrust\n')
+            f1.write('ID\tTweet\tanger\tanticipation\tdisgust\tfear\tjoy\tlove\toptimism\tpessimism\tsadness\tsurprise\ttrust\n')       
+            while True:
+                try : 
+                    output = predict_results.next()
+                    # rstrip for remove '\n' for some data
+                    line_concat = '\t'.join(lines[i].split('\t')[:2]).rstrip() + '\t' + '\t'.join(output['probability'].astype(str)) + '\n'
+                    f1.write(line_concat)
 
-            except StopIteration:
-                break
+                    line_concat = '\t'.join(lines[i].split('\t')[:2]).rstrip() + '\t' + '\t'.join(output['sentiment'].astype(str)) + '\n'
+                    f.write(line_concat)
+                    i += 1
+
+                except StopIteration:
+                    break
 
 def main(unused):
     
@@ -142,6 +147,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_origin', type = str, default = '')
     parser.add_argument('--model_dir', type = str, help = 'path to save the model')
     parser.add_argument('--pred_dir', type = str, help = 'path to save the predictions')
+    parser.add_argument('--prob_dir', type = str, default = 'None', help = 'path to save the predicted probability')
     parser.add_argument('--params', type = str, help = 'parameter setting')
     parser.add_argument('--steps', type = int, default = 200000, help = 'training step size')
     parser.add_argument('--num_epochs', default = 10, help = 'training epoch size')
