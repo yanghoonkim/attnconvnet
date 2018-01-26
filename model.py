@@ -17,7 +17,6 @@ def accuracy4multilabel(labels, predictions):
 
 
 def attn_net(features, labels, mode, params):
-    labels = tf.cast(labels, tf.int32)
     hidden_size = params['hidden_size']
     voca_size = params['voca_size']
     bucket_sizes = params['bucket_sizes']
@@ -38,8 +37,17 @@ def attn_net(features, labels, mode, params):
         return tf.nn.embedding_lookup(embedding, inputs)
 
     def conv_op(embd_inp, params):
-        fltr = tf.get_variable('conv_fltr', params['kernel'], params['dtype'])
+        fltr = tf.get_variable(
+                'conv_fltr', 
+                params['kernel'], 
+                params['dtype'], 
+                regularizer = tf.contrib.layers.l2_regularizer(1.0)
+                )
+
         convout = tf.nn.conv1d(embd_inp, fltr, params['stride'], params['conv_pad'])
+        return convout
+    def multi_conv_op(embed_inp, params):
+        x = embed_inp
         return convout
 
     def ffn_op(x, params):
@@ -49,8 +57,20 @@ def attn_net(features, labels, mode, params):
         else:
             ffn_size = params['ffn_size']
         for unit_size in ffn_size[:-1]:
-            out = tf.layers.dense(out, unit_size, activation = tf.tanh, use_bias = True)
-        return tf.layers.dense(out, params['label_size'], activation = None, use_bias = True)
+            out = tf.layers.dense(
+                    out, 
+                    unit_size, 
+                    activation = tf.tanh, 
+                    use_bias = True, 
+                    kernel_regularizer = tf.contrib.layers.l2_regularizer(1.0)
+                    )
+        return tf.layers.dense(
+                out, 
+                params['label_size'], 
+                activation = None, 
+                use_bias = True, 
+                kernel_regularizer = tf.contrib.layers.l2_regularizer(1.0)
+                )
 
     def transformer_ffn_layer(x, params):
         """Feed-forward layer in the transformer.
@@ -71,9 +91,19 @@ def attn_net(features, labels, mode, params):
     # raw input to embedded input of shape [batch, length, hidden_size]
     embd_inp = embed_op(inputs, params)
     if params['hidden_size'] != embd_inp.get_shape().as_list()[-1]:
-        x = tf.layers.dense(embd_inp, params['hidden_size'], activation = tf.tanh, use_bias = True)
+        x = tf.layers.dense(
+                embd_inp, 
+                params['hidden_size'], 
+                activation = None, 
+                use_bias = False, 
+                kernel_regularizer = tf.contrib.layers.l2_regularizer(1.0)
+                )
     else:
         x = embd_inp
+
+    # attention bias computation
+    padding = ca.embedding_to_padding(x)
+    self_attention_bias = ca.attention_bias_ignore_padding(padding)
 
     for layer in xrange(params['num_layers']):
         x = residual_fn(
@@ -81,7 +111,7 @@ def attn_net(features, labels, mode, params):
         ca.multihead_attention(
                 query_antecedent = x,
                 memory_antecedent = None, 
-                bias = None,
+                bias = self_attention_bias,
                 total_key_depth = params['hidden_size'],
                 total_value_depth = params['value_depth'],
                 output_depth = params['hidden_size'],
@@ -104,16 +134,33 @@ def attn_net(features, labels, mode, params):
     
             channel_out = params['kernel'][-1]
             # width_out = (feature_length - windows_size)/stride + 1
+            # (56 - 10) + 1 = 47 
             width_out = (x.get_shape().as_list()[1] - params['kernel'][0])/params['stride'] + 1
 
 
             # pooling over time
             convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
-            pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1, 1, 1, 1], 'VALID')
+            pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1,1,1,1], 'VALID')
             pooling = tf.reshape(pooling, [-1, channel_out])
-    
             ffn_out = ffn_op(pooling, params)
+            '''
+            pooling = tf.nn.max_pool(convout, [1, 5, 1, 1], [1, 2, 1, 1], 'VALID')
+            # result : (47-3)/2 + 1 = 23,
+            # result : (47-5)/2 + 1 = 22,
+            pooling = tf.reshape(pooling, [-1, 22, channel_out])
 
+            fltr = tf.get_variable('f', [4, 30, 30], tf.float32)
+            out = tf.nn.conv1d(pooling, fltr, 2, 'VALID')
+            # result : (23-3)/2 + 1 =11
+            # result : (22-4)/2 + 1 = 10 best 55.00 
+            # result : (22-6)/4 + 1 = 5
+
+            out = tf.reshape(out, [-1, 10, 1, 30])
+            pool = tf.nn.max_pool(out, [1, 10, 1, 1], [1,1,1,1], 'VALID')
+            resu = tf.reshape(pool, [-1, 30])
+
+            ffn_out = ffn_op(resu, params)
+            ''' 
             logits.append(ffn_out)
 
     # predictions, loss and eval_metric 
@@ -122,8 +169,14 @@ def attn_net(features, labels, mode, params):
         logits = logits[0]
         softmax_out = tf.nn.softmax(logits)
         predictions = tf.argmax(softmax_out, axis = -1)
+        if mode == tf.estimator.ModeKeys.PREDICT:
+            return tf.estimator.EstimatorSpec(
+                    mode = mode,
+                    predictions = {'sentiment' : predictions})
+        labels = tf.cast(labels, tf.int32)
         labels = tf.one_hot(labels, params['label_size'])
-        loss = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = logits)
+
+        loss_ce = tf.losses.softmax_cross_entropy(onehot_labels = labels, logits = logits)
         eval_metric_ops = {
                 'accuracy' : tf.metrics.accuracy(tf.argmax(labels, -1), predictions = predictions),
                 'pearson_all' : tf.contrib.metrics.streaming_pearson_correlation(softmax_out, tf.cast(labels, tf.float32)),
@@ -132,19 +185,27 @@ def attn_net(features, labels, mode, params):
     else: 
         # multi label classification
         logits = tf.concat(logits, axis = -1)
-        predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
+        #predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
+        predictions = tf.to_int32(tf.sigmoid(logits)>0.5)
+        # Provide an estimator spec for 'Modekeys.PREDICT'
+        if mode == tf.estimator.ModeKeys.PREDICT:
+            return tf.estimator.EstimatorSpec(
+                    mode = mode,
+                    predictions = {"sentiment" : predictions})
+        labels = tf.cast(labels, tf.int32)
         eval_metric_ops = {
                 'accuracy' : accuracy4multilabel(labels, predictions)
                 }
-        loss = tf.losses.sigmoid_cross_entropy(labels, logits)
-    tf.summary.scalar('loss', loss)
-    
-    # Provide an estimator spec for `ModeKeys.PREDICT`.
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(
-                mode=mode,
-                predictions={"sentiment": predictions})
+        loss_ce = tf.losses.sigmoid_cross_entropy(labels, logits)
 
+    # regularizaiton loss
+    loss_reg = sum(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    reg_const = params['regularization']  # Choose an appropriate one.
+    
+    loss = loss_ce + reg_const * loss_reg
+
+    tf.summary.scalar('loss_ce', loss_ce)
+    tf.summary.scalar('loss_reg', loss_reg)
     tf.summary.scalar('loss', loss)
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
