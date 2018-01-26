@@ -307,7 +307,7 @@ def conv_internal(conv_fn, inputs, filters, kernel_size, **kwargs):
     original_force2d = None
     if "force2d" in kwargs:
       original_force2d = kwargs.pop("force2d")
-    result = conv_fn(inputs, filters, kernel_size_arg, name=name, **kwargs)
+    result = conv_fn(inputs, filters, kernel_size_arg, kernel_regularizer = tf.contrib.layers.l2_regularizer(1.0), name=name, **kwargs)
     if original_name is not None:
       kwargs["name"] = original_name  # Restore for other calls.
     if original_force2d is not None:

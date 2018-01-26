@@ -51,34 +51,54 @@ def sst5_params():
     return hparams
 
 def sem4_params():
+    hidden = 20
     hparams = basic_params()
     hparams.voca_size = 4674
     hparams.embedding = 'data/semeval/processed/glove840b_semeval1_4_vocab300.npy'
     hparams.embedding_trainable = False
     hparams.label_size = 7
-    hparams.hidden_size = 20
-    hparams.value_depth = 20
+    hparams.hidden_size = hidden
+    hparams.value_depth = hidden
     hparams.num_layers = 3
     hparams.num_heads = 2
     hparams.filter_size = 64
-    hparams.kernel = [10, 20, 30]
+    hparams.kernel = [10, hidden, 30]
     hparams.batch_size = 20
     hparams.learning_rate = 0.02
     return hparams
 
-def sem5_params():
+def sem5_params(): # 52.3
+    hidden = 30
     hparams = basic_params()
     hparams.voca_size = 13376
     hparams.embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300.npy'
     hparams.embedding_trainable = False
     hparams.label_size = 1
     hparams.multi_label = 11
-    hparams.hidden_size = 20
-    hparams.value_depth = 20
+    hparams.hidden_size = hidden
+    hparams.value_depth = hidden
     hparams.num_layers = 3
     hparams.num_heads = 2
     hparams.filter_size = 64
-    hparams.kernel = [10, 20, 30]
+    hparams.kernel = [10, hidden, 30]
     hparams.batch_size = 20
     hparams.learning_rate = 0.02
+    return hparams
+
+
+def sem5_params_ignore_bias():
+    hparams = sem5_params()
+    #hparams.voca_size = 19140
+    #hparams.embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300_all_with_zero.npy'
+    hparams.voca_size = 190467
+    hparams.embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300_unlabel.npy'
+    hparams.embedding_trainable = False 
+    return hparams
+
+def sem5_emo():
+    hparams = sem5_params()
+    hparams.voca_size = 190496
+    hparams.embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300_emo_unlabel.npy'
+    hparams.add_hparam('regularization', 0.005)
+    hparams.batch_size = 256
     return hparams
