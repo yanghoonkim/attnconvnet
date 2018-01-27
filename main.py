@@ -78,14 +78,23 @@ def main(unused):
     train_data = np.load(FLAGS.train_data)
     train_label = np.load(FLAGS.train_label)
 
+    # load lexicon data
+    if FLAGS.lexicon_train is not None:
+        train_lexicon = np.load(FLAGS.lexicon_train)
+        dev_lexicon = np.load(FLAGS.lexicon_dev)
+        test_lexicon = np.load(FLAGS.lexicon_test)
+
     # data shuffling for training data
     permutation = np.random.permutation(len(train_label))
     train_data = train_data[permutation]
     train_label = train_label[permutation]
 
+    if FLAGS.lexicon_train is not None:
+        train_lexicon = train_lexicon[permutation]
+
     # training input function for estimator
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x={"x": train_data},
+        x={"x": train_data, 'lexicon': train_lexicon},
         y=train_label,
         batch_size = model_params['batch_size'],
         num_epochs=FLAGS.num_epochs,
@@ -97,7 +106,7 @@ def main(unused):
     
     # evaluation input function for estimator
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-        x = {"x": eval_data},
+        x = {"x": eval_data, 'lexicon': dev_lexicon},
         y = eval_label,
         num_epochs=1,
         shuffle=False)  
@@ -123,7 +132,7 @@ def main(unused):
 
         # prediction input function for estimator
         pred_input_fn = tf.estimator.inputs.numpy_input_fn(
-                x = {"x" : pred_data},
+                x = {"x" : pred_data, 'lexicon': test_lexicon},
                 shuffle = False
                 )
 
@@ -145,6 +154,9 @@ if __name__ == '__main__':
     parser.add_argument('--eval_label', type = str, default = '', help = 'path to the evaluation label.')
     parser.add_argument('--test_data', type = str, default = '', help = 'path to the test data')
     parser.add_argument('--test_origin', type = str, default = '')
+    parser.add_argument('--lexicon_train', type = str, help = 'path to lexicon data')
+    parser.add_argument('--lexicon_dev', type = str, help = 'path to the lexicon data')
+    parser.add_argument('--lexicon_test', type = str, help = 'path to the lexicon data')
     parser.add_argument('--model_dir', type = str, help = 'path to save the model')
     parser.add_argument('--pred_dir', type = str, help = 'path to save the predictions')
     parser.add_argument('--prob_dir', type = str, default = 'None', help = 'path to save the predicted probability')

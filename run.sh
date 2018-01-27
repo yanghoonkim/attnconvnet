@@ -78,6 +78,9 @@ sem5emo(){
 	DEV_INPUT='data/semeval/processed/ec_dev_emo_unlabel.npy'
 	DEV_TARGET='data/semeval/processed/ec_dev_emo_label_unlabel.npy'
 	TEST_INPUT='data/semeval/processed/ec_test_emo_unlabel.npy'
+	LEXICON_TRAIN='data/semeval/processed/sentiment_train_emo.npy'
+	LEXICON_DEV='data/semeval/processed/sentiment_dev_emo.npy'
+	LEXICON_TEST='data/semeval/processed/sentiment_test_emo.npy'
 	#TEST_INPUT='data/semeval/processed/ec_mass.npy'
 	#TEST_ORIGIN='data/semeval/2018-E-c-En-dev.txt'
 	TEST_ORIGIN='data/semeval/2018-E-c-En-test-emo.txt'
@@ -105,6 +108,9 @@ python main.py \
 	--eval_data=$DEV_INPUT \
 	--eval_label=$DEV_TARGET \
 	--test_data=$TEST_INPUT \
+	--lexicon_train=$LEXICON_TRAIN \
+	--lexicon_dev=$LEXICON_DEV \
+	--lexicon_test=$LEXICON_TEST \
 	--model_dir=$MODEL_DIR \
 	--pred_dir=$PRED_DIR \
 	--prob_dir=$PROB_DIR \
