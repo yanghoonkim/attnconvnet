@@ -87,6 +87,8 @@ def attn_net(features, labels, mode, params):
             dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 0)
 
     inputs = features['x']
+    lexicon = features['lexicon']
+    lexicon = tf.cast(lexicon, tf.float32)
     
     # raw input to embedded input of shape [batch, length, hidden_size]
     embd_inp = embed_op(inputs, params)
@@ -142,7 +144,9 @@ def attn_net(features, labels, mode, params):
             convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
             pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1,1,1,1], 'VALID')
             pooling = tf.reshape(pooling, [-1, channel_out])
-            ffn_out = ffn_op(pooling, params)
+            lexicon_partial = tf.stack([lexicon[:,i]], axis = -1)
+            integrate_lexicon = tf.concat([pooling, lexicon_partial], axis = -1)
+            ffn_out = ffn_op(integrate_lexicon, params)
             '''
             pooling = tf.nn.max_pool(convout, [1, 5, 1, 1], [1, 2, 1, 1], 'VALID')
             # result : (47-3)/2 + 1 = 23,
@@ -210,6 +214,9 @@ def attn_net(features, labels, mode, params):
     tf.summary.scalar('loss', loss)
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
+    #learning_rate = params['learning_rate']
+    #learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, 0.7)
+    #optimizer = tf.train.AdamOptimizer(learning_rate)
     optimizer = tf.train.AdamOptimizer()
 
     #train_op = optimizer.minimize(
