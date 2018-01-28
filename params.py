@@ -100,4 +100,5 @@ def sem5_emo():
     hparams.voca_size = 190496
     hparams.embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300_emo_unlabel.npy'
     hparams.add_hparam('regularization', 0.0005)
+    hparams.learning_rate = 0.001
     return hparams
