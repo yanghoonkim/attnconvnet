@@ -91,6 +91,25 @@ sem5emo(){
 	PARAMS=sem5_emo
 }
 
+sem5emo-lexicon_1_4(){
+	TRAIN_INPUT='data/semeval/processed/ec_train_emo_unlabel.npy'
+	TRAIN_TARGET='data/semeval/processed/ec_train_emo_label_unlabel.npy'
+	DEV_INPUT='data/semeval/processed/ec_dev_emo_unlabel.npy'
+	DEV_TARGET='data/semeval/processed/ec_dev_emo_label_unlabel.npy'
+	TEST_INPUT='data/semeval/processed/ec_test_emo_unlabel.npy'
+	LEXICON_TRAIN='data/semeval/processed/nrc_train_emo_bi.npy'
+	LEXICON_DEV='data/semeval/processed/nrc_dev_emo_bi.npy'
+	LEXICON_TEST='data/semeval/processed/nrc_test_emo_bi.npy'
+	#TEST_INPUT='data/semeval/processed/ec_mass.npy'
+	#TEST_ORIGIN='data/semeval/2018-E-c-En-dev.txt'
+	TEST_ORIGIN='data/semeval/2018-E-c-En-test.txt'
+	#TEST_ORIGIN='data/semeval/SemEval2018-AIT-DISC-tweets2_max40.txt'
+	PRED_DIR='result/sem5emo_lexicon_1/E-C_en_pred.txt'
+	#PRED_DIR='result/sem5/mass39k.txt'
+	PROB_DIR='result/sem5emo_lexicon_1/E-C_en_prob.txt'
+	PARAMS=sem5_emo
+}
+
 
 # Pass the first argument as the name of dataset
 # Pass the second argument as mode
@@ -99,7 +118,7 @@ $2
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
-MODEL_DIR=~/work/attentionnet/store_model/$PARAMS
+MODEL_DIR=~/work/attentionnet/store_model/$1
 
 python main.py \
 	--mode=$MODE \

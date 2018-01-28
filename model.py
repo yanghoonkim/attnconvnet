@@ -189,7 +189,8 @@ def attn_net(features, labels, mode, params):
     else: 
         # multi label classification
         logits = tf.concat(logits, axis = -1)
-        logits = logits + 0.5 * lexicon
+        if mode != tf.estimator.ModeKeys.TRAIN:
+            logits = logits + params['lexicon_effect'] * lexicon
         #predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
         prob = tf.sigmoid(logits)
         predictions = tf.to_int32(prob>0.5)
@@ -216,7 +217,7 @@ def attn_net(features, labels, mode, params):
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
     learning_rate = params['learning_rate']
-    learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, 0.5, staircase = True)
+    learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, params['decay'], staircase = True)
     optimizer = tf.train.AdamOptimizer(learning_rate)
     #optimizer = tf.train.AdamOptimizer()
 
