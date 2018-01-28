@@ -144,9 +144,9 @@ def attn_net(features, labels, mode, params):
             convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
             pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1,1,1,1], 'VALID')
             pooling = tf.reshape(pooling, [-1, channel_out])
-            lexicon_partial = tf.stack([lexicon[:,i]], axis = -1)
-            integrate_lexicon = tf.concat([pooling, lexicon_partial], axis = -1)
-            ffn_out = ffn_op(integrate_lexicon, params)
+            #lexicon_partial = tf.stack([lexicon[:,i]], axis = -1)
+            #integrate_lexicon = tf.concat([pooling, lexicon_partial], axis = -1)
+            ffn_out = ffn_op(pooling, params)
             '''
             pooling = tf.nn.max_pool(convout, [1, 5, 1, 1], [1, 2, 1, 1], 'VALID')
             # result : (47-3)/2 + 1 = 23,
@@ -189,6 +189,7 @@ def attn_net(features, labels, mode, params):
     else: 
         # multi label classification
         logits = tf.concat(logits, axis = -1)
+        logits = logits + 0.5 * lexicon
         #predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
         prob = tf.sigmoid(logits)
         predictions = tf.to_int32(prob>0.5)
@@ -214,10 +215,10 @@ def attn_net(features, labels, mode, params):
     tf.summary.scalar('loss', loss)
     
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate=params["learning_rate"])
-    #learning_rate = params['learning_rate']
-    #learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, 0.7)
-    #optimizer = tf.train.AdamOptimizer(learning_rate)
-    optimizer = tf.train.AdamOptimizer()
+    learning_rate = params['learning_rate']
+    learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, 0.5, staircase = True)
+    optimizer = tf.train.AdamOptimizer(learning_rate)
+    #optimizer = tf.train.AdamOptimizer()
 
     #train_op = optimizer.minimize(
         #loss=loss, global_step=tf.train.get_global_step())
