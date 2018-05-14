@@ -87,6 +87,8 @@ def attn_net(features, labels, mode, params):
             dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 0)
 
     inputs = features['x']
+    lexicon = features['lexicon']
+    lexicon = tf.cast(lexicon, tf.float32)
     
     # raw input to embedded input of shape [batch, length, hidden_size]
     embd_inp = embed_op(inputs, params)
@@ -142,25 +144,14 @@ def attn_net(features, labels, mode, params):
             convout = tf.reshape(convout, [-1, width_out, 1, channel_out])
             pooling = tf.nn.max_pool(convout, [1, width_out, 1, 1], [1,1,1,1], 'VALID')
             pooling = tf.reshape(pooling, [-1, channel_out])
-            ffn_out = ffn_op(pooling, params)
-            '''
-            pooling = tf.nn.max_pool(convout, [1, 5, 1, 1], [1, 2, 1, 1], 'VALID')
-            # result : (47-3)/2 + 1 = 23,
-            # result : (47-5)/2 + 1 = 22,
-            pooling = tf.reshape(pooling, [-1, 22, channel_out])
 
-            fltr = tf.get_variable('f', [4, 30, 30], tf.float32)
-            out = tf.nn.conv1d(pooling, fltr, 2, 'VALID')
-            # result : (23-3)/2 + 1 =11
-            # result : (22-4)/2 + 1 = 10 best 55.00 
-            # result : (22-6)/4 + 1 = 5
+            if params['lexicon_mode'] == 'nrc1':
+                lexicon_partial = tf.stack([lexicon[:,i]], axis = -1)
+                integrate_lexicon = tf.concat([pooling, lexicon_partial], axis = -1)
+                ffn_out = ffn_op(integrate_lexicon, params)
+            else:
+                ffn_out = ffn_op(pooling, params)
 
-            out = tf.reshape(out, [-1, 10, 1, 30])
-            pool = tf.nn.max_pool(out, [1, 10, 1, 1], [1,1,1,1], 'VALID')
-            resu = tf.reshape(pool, [-1, 30])
-
-            ffn_out = ffn_op(resu, params)
-            ''' 
             logits.append(ffn_out)
 
     # predictions, loss and eval_metric 
