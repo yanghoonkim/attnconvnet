@@ -6,33 +6,6 @@ import params
 import model as model
 
 FLAGS = None
-map_intensity = {
-        -3 : '-3: very negative emotional state can be inferred',
-        -2 : '-2: moderately negative emotional state can be inferred',
-        -1 : '-1: slightly negative emotional state can be inferred',
-        0 : '0: neutral or mixed emotional state can be inferred',
-        1 : '1: slightly positive emotional state can be inferred',
-        2 : '2: moderately positive emotional state can be inferred',
-        3 : '3: very positive emotional state can be inferred'
-        }
-# write prediction into file
-def write_sem4(predict_results):
-    vocab_label = np.load('data/semeval/processed/vocab_label_voc.npy').item()
-    vocab_label_rev = dict((v,k) for k,v in vocab_label.iteritems())
-    i = 1
-    with open(FLAGS.test_origin) as f:
-        lines = f.readlines()
-    with open(FLAGS.pred_dir, 'w') as f:
-        f.write('ID\tTweet\tAffect Dimension\tIntensity Class\n')
-        while True:
-            try :
-                output = predict_results.next()
-                line_concat = '\t'.join(lines[i].split('\t')[:3]) + '\t' + map_intensity[vocab_label_rev[output['sentiment']]] + '\n'
-                f.write(line_concat)
-                i += 1
-            except StopIteration:
-                break
-
 
 def write_sem5(predict_results):
     i = 1
@@ -138,10 +111,7 @@ def main(unused):
 
         # prediction
         predict_results = nn.predict(input_fn = pred_input_fn)
-        if 'ec_train' in FLAGS.train_data:
-            write_sem5(predict_results)
-        elif 'voc_train' in FLAGS.train_data:
-            write_sem4(predict_results)
+        write_sem5(predict_results)
 
 
     

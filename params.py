@@ -31,9 +31,10 @@ def sem5emo():
         # learning parameters
         batch_size = 256,
         learning_rate = 0.02,
+        decay = 0.4, 
 
         regularization = 0.005,
 
-        lexicon_mode = 'nrc1' # None, 'nrc1' and 'nrc2'
+        lexicon_effect = 'nrc1' # None, 'nrc1' and float number for nrc2
         
     )
