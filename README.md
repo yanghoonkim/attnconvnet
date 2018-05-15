@@ -2,6 +2,10 @@
 
 Tensorflow implementation of [AttnConvnet](https://arxiv.org/pdf/1804.00831.pdf)
 
+Warning!! **Dirty version source code**
+
+The source code will be beautified and restructured ASAP
+
 1. **Model**
 
 	- Embedding
