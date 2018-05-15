@@ -17,62 +17,7 @@ pred(){
 	MODE='pred'
 }
 
-trec(){
-	TRAIN_INPUT='data/trec/processed/trec_train.npy'
-	TRAIN_TARGET='data/trec/processed/trec_train_label.npy'
-	DEV_INPUT='data/trec/processed/trec_test.npy'
-	DEV_TARGET='data/trec/processed/trec_test_label.npy'
-	PARAMS=trec_params
-}
-
-sst5(){
-	TRAIN_INPUT='data/sst/processed_git/sst5_train.npy'
-	TRAIN_TARGET='data/sst/processed_git/sst5_train_label.npy'
-	DEV_INPUT='data/sst/processed_git/sst5_test.npy'
-	DEV_TARGET='data/sst/processed_git/sst5_test_label.npy'
-	PARAMS=sst5_params
-}
-
-sem4(){
-	TRAIN_INPUT='data/semeval/processed/voc_train1.npy'
-	TRAIN_TARGET='data/semeval/processed/voc_train1_label.npy'
-	DEV_INPUT='data/semeval/processed/voc_dev.npy'
-	DEV_TARGET='data/semeval/processed/voc_dev_label.npy'
-	TEST_INPUT='data/semeval/processed/voc_dev.npy'
-	TEST_ORIGIN='data/semeval/2018-Valence-oc-En-dev.txt'
-	PRED_DIR='result/sem4/V-oc_en_pred.txt'
-	PARAMS=sem4_params
-}
-
-sem5(){
-	TRAIN_INPUT='data/semeval/processed/ec_train_all.npy'
-	TRAIN_TARGET='data/semeval/processed/ec_train_label_all.npy'
-	DEV_INPUT='data/semeval/processed/ec_dev_all.npy'
-	DEV_TARGET='data/semeval/processed/ec_dev_label_all.npy'
-	TEST_INPUT='data/semeval/processed/ec_mass.npy'
-	#TEST_ORIGIN='data/semeval/2018-E-c-En-dev.txt'
-	#TEST_ORIGIN='data/semeval/2018-E-c-EN-test.txt'
-	TEST_ORIGIN='data/semeval/SemEval2018-AIT-DISC-tweets2_max40.txt'
-	#PRED_DIR='result/sem5/E-C_en_pred.txt'
-	PRED_DIR='result/sem5/mass39k.txt'
-	PARAMS=sem5_params_ignore_bias
-}
-
-sem5c1(){
-	TRAIN_INPUT='data/semeval/processed/ec_mass.npy'
-	TRAIN_TARGET='data/semeval/processed/ec_mass_label.npy'
-	DEV_INPUT='data/semeval/processed/ec_dev_all.npy'
-	DEV_TARGET='data/semeval/processed/ec_dev_label_all.npy'
-	TEST_INPUT='data/semeval/processed/ec_mass.npy'
-	#TEST_ORIGIN='data/semeval/2018-E-c-En-dev.txt'
-	#TEST_ORIGIN='data/semeval/2018-E-c-EN-test.txt'
-	TEST_ORIGIN='data/semeval/SemEval2018-AIT-DISC-tweets2_max40.txt'
-	#PRED_DIR='result/sem5/E-C_en_pred.txt'
-	PRED_DIR='result/sem5/mass39k.txt'
-	PARAMS=sem5_only_unlabel
-}
-
-sem5emo(){
+basic_params(){
 	TRAIN_INPUT='data/semeval/processed/ec_train_emo_unlabel.npy'
 	TRAIN_TARGET='data/semeval/processed/ec_train_emo_label_unlabel.npy'
 	DEV_INPUT='data/semeval/processed/ec_dev_emo_unlabel.npy'
@@ -84,7 +29,7 @@ sem5emo(){
 	TEST_ORIGIN='data/semeval/2018-E-c-En-test-emo.txt'
 	PRED_DIR='result/sem5/E-C_en_pred.txt'
 	PROB_DIR='result/sem5/E-C_en_prob.txt'
-	PARAMS=sem5emo
+	PARAMS=basic_params
 }
 
 

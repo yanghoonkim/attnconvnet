@@ -1,5 +1,5 @@
 import tensorflow as tf
-def sem5emo():
+def basic_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
         dtype = tf.float32,
