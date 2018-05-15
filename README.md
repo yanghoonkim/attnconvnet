@@ -1,6 +1,6 @@
 # AttnConvnet at SemEval-2018 Task 1 : Attention-based Convolutional Neural Networks for Multi-label Emotion Classification
 
-Tensorflow implementation of AttnConvnet
+Tensorflow implementation of [AttnConvnet](https://arxiv.org/pdf/1804.00831.pdf)
 
 1. **Model**
 
@@ -87,5 +87,18 @@ bash run.sh [parameter set] pred
 # Example : bash run.sh basic_params pred
 ```
 
+## Use pre-trained embedding
 
+Open `params.py` and change `embedding = None` to the path of pre-trained embedding file
+
+Example : `embedding = 'data/processed/glove_embedding.npy'` 
+
+## Use lexicon
+
+Open `params.py` and change `lexicon_effect = None` to other values
+
+- AC + nrc1 in [paper](https://arxiv.org/pdf/1804.00831.pdf)
+	- `lexicon_effect = 'nrc1'`
+- AC + nrc2 in [paper](https://arxiv.org/pdf/1804.00831.pdf)
+	- `lexicon_effect = 0.4`
 
