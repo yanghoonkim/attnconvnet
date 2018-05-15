@@ -7,7 +7,7 @@ import model as model
 
 FLAGS = None
 
-def write_sem5(predict_results):
+def write_file(predict_results):
     i = 1
     with open(FLAGS.test_origin) as f:
         lines = f.readlines()
@@ -52,22 +52,26 @@ def main(unused):
     train_label = np.load(FLAGS.train_label)
 
     # load lexicon data
-    if FLAGS.lexicon_train is not None:
+    if model_params['lexicon_effect'] is not None:
         train_lexicon = np.load(FLAGS.lexicon_train)
         dev_lexicon = np.load(FLAGS.lexicon_dev)
         test_lexicon = np.load(FLAGS.lexicon_test)
+    else:
+        train_lexicon = None
+        dev_lexicon = None
+        test_lexicon = None
 
     # data shuffling for training data
     permutation = np.random.permutation(len(train_label))
     train_data = train_data[permutation]
     train_label = train_label[permutation]
 
-    if FLAGS.lexicon_train is not None:
+    if model_params['lexicon_effect'] is not None:
         train_lexicon = train_lexicon[permutation]
 
     # training input function for estimator
     train_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x={"x": train_data, 'lexicon': train_lexicon},
+            x={"x": train_data, 'lexicon': train_lexicon if train_lexicon is not None else train_data},
         y=train_label,
         batch_size = model_params['batch_size'],
         num_epochs=FLAGS.num_epochs,
@@ -79,7 +83,7 @@ def main(unused):
     
     # evaluation input function for estimator
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(
-            x = {"x": eval_data, 'lexicon': dev_lexicon},
+            x = {"x": eval_data, 'lexicon': dev_lexicon if dev_lexicon is not None else eval_data},
         y = eval_label,
         num_epochs=1,
         shuffle=False)  
@@ -105,13 +109,13 @@ def main(unused):
 
         # prediction input function for estimator
         pred_input_fn = tf.estimator.inputs.numpy_input_fn(
-                x = {"x" : pred_data, 'lexicon': test_lexicon},
+                x = {"x" : pred_data, 'lexicon': test_lexicon if test_lexicon is not None else pred_data},
                 shuffle = False
                 )
 
         # prediction
         predict_results = nn.predict(input_fn = pred_input_fn)
-        write_sem5(predict_results)
+        write_file(predict_results)
 
 
     

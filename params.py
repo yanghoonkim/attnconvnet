@@ -4,8 +4,8 @@ def basic_params():
     return tf.contrib.training.HParams(
         dtype = tf.float32,
         voca_size = 190496,
-        embedding = 'data/semeval/processed/glove840b_semeval1_5_vocab300_emo_unlabel.npy',
-        embedding_trainable = False,
+        embedding = None, # or the path to the pre-trained embedding
+        embedding_trainable = True,
         label_size = 1, # if 1, multi-label setting
         multi_label = 11, # if >1, multi-label setting
         hidden_size = 30,
@@ -35,6 +35,6 @@ def basic_params():
 
         regularization = 0.005,
 
-        lexicon_effect = 'nrc1' # None, 'nrc1' and float number for nrc2
+        lexicon_effect = None # None, 'nrc1' and float number for nrc2
         
     )

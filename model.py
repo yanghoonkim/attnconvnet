@@ -87,8 +87,9 @@ def attn_net(features, labels, mode, params):
             dropout=params['relu_dropout'] if mode == tf.estimator.ModeKeys.TRAIN else 0)
 
     inputs = features['x']
-    lexicon = features['lexicon']
-    lexicon = tf.cast(lexicon, tf.float32)
+    if params['lexicon_effect'] is not None:
+        lexicon = features['lexicon']
+        lexicon = tf.cast(lexicon, tf.float32)
     
     # raw input to embedded input of shape [batch, length, hidden_size]
     embd_inp = embed_op(inputs, params)
