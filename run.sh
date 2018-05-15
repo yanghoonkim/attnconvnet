@@ -18,17 +18,17 @@ pred(){
 }
 
 basic_params(){
-	TRAIN_INPUT='data/semeval/processed/ec_train_emo_unlabel.npy'
-	TRAIN_TARGET='data/semeval/processed/ec_train_emo_label_unlabel.npy'
-	DEV_INPUT='data/semeval/processed/ec_dev_emo_unlabel.npy'
-	DEV_TARGET='data/semeval/processed/ec_dev_emo_label_unlabel.npy'
-	TEST_INPUT='data/semeval/processed/ec_test_emo_unlabel.npy'
-	LEXICON_TRAIN='data/semeval/processed/sentiment_train_emo.npy'
-	LEXICON_DEV='data/semeval/processed/sentiment_dev_emo.npy'
-	LEXICON_TEST='data/semeval/processed/sentiment_test_emo.npy'
-	TEST_ORIGIN='data/semeval/2018-E-c-En-test-emo.txt'
-	PRED_DIR='result/sem5/E-C_en_pred.txt'
-	PROB_DIR='result/sem5/E-C_en_prob.txt'
+	TRAIN_INPUT='data/processed/ec_train.npy'
+	TRAIN_TARGET='data/processed/ec_train_label.npy'
+	DEV_INPUT='data/processed/ec_dev.npy'
+	DEV_TARGET='data/processed/ec_dev_label.npy'
+	TEST_INPUT='data/processed/ec_test.npy'
+	LEXICON_TRAIN='data/processed/sentiment_train.npy'
+	LEXICON_DEV='data/processed/sentiment_dev.npy'
+	LEXICON_TEST='data/processed/sentiment_test.npy'
+	TEST_ORIGIN='data/2018-E-c-En-test.txt'
+	PRED_DIR='result/E-C_en_pred.txt'
+	PROB_DIR='result/E-C_en_prob.txt'
 	PARAMS=basic_params
 }
 
