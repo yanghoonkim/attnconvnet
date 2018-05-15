@@ -15,16 +15,16 @@ TEST_FILE = 'data/2018-E-c-En-test.txt'
 
 VOCAB = ['data/processed/vocab_ec.npy', 'data/processed/vocab_label_ec.npy']
 
-outfile_train_data = 'data/processed/ec_train'
-outfile_train_label = 'data/processed/ec_train_label'
-outfile_train_length = 'data/processed/ec_train_length'
+outfile_train_data = 'data/processed/ec_train.npy'
+outfile_train_label = 'data/processed/ec_train_label.npy'
+outfile_train_length = 'data/processed/ec_train_length.npy'
 
-outfile_dev_data = 'data/processed/ec_dev'
-outfile_dev_label = 'data/processed/ec_dev_label'
-outfile_dev_length = 'data/processed/ec_dev_length'
+outfile_dev_data = 'data/processed/ec_dev.npy'
+outfile_dev_label = 'data/processed/ec_dev_label.npy'
+outfile_dev_length = 'data/processed/ec_dev_length.npy'
 
-outfile_test_data = 'data/processed/ec_test'
-outfile_test_length = 'data/processed/ec_test_length'
+outfile_test_data = 'data/processed/ec_test.npy'
+outfile_test_length = 'data/processed/ec_test_length.npy'
 
 outfile_train = [outfile_train_data, outfile_train_label, outfile_train_length]
 outfile_dev = [outfile_dev_data, outfile_dev_label, outfile_dev_length]

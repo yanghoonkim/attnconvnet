@@ -3,14 +3,13 @@ def basic_params():
     '''A set of basic hyperparameters'''
     return tf.contrib.training.HParams(
         dtype = tf.float32,
-        voca_size = 190496,
-        embedding = None, # or the path to the pre-trained embedding
-        embedding_trainable = True,
+        voca_size = 13376,
+        embedding = 'data/processed/glove_embedding.npy', # None or the path to the pre-trained embedding
+        embedding_trainable = False, # True or False
         label_size = 1, # if 1, multi-label setting
         multi_label = 11, # if >1, multi-label setting
         hidden_size = 30,
         value_depth = 30,
-        bucket_sizes = [10, 20, 30, 40, 50],
         
         # attention network parameters
         num_layers = 3,
@@ -29,8 +28,8 @@ def basic_params():
         ffn_size = None,
         
         # learning parameters
-        batch_size = 256,
-        learning_rate = 0.02,
+        batch_size = 20,
+        learning_rate = 0.001,
         decay = 0.4, 
 
         regularization = 0.005,

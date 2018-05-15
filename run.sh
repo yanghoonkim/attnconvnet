@@ -23,9 +23,9 @@ basic_params(){
 	DEV_INPUT='data/processed/ec_dev.npy'
 	DEV_TARGET='data/processed/ec_dev_label.npy'
 	TEST_INPUT='data/processed/ec_test.npy'
-	LEXICON_TRAIN='data/processed/sentiment_train.npy'
-	LEXICON_DEV='data/processed/sentiment_dev.npy'
-	LEXICON_TEST='data/processed/sentiment_test.npy'
+	LEXICON_TRAIN='data/processed/nrc_train.npy'
+	LEXICON_DEV='data/processed/nrc_dev.npy'
+	LEXICON_TEST='data/processed/nrc_test.npy'
 	TEST_ORIGIN='data/2018-E-c-En-test.txt'
 	PRED_DIR='result/E-C_en_pred.txt'
 	PROB_DIR='result/E-C_en_prob.txt'
@@ -40,7 +40,7 @@ $2
 
 TRAIN_STEPS=200000
 NUM_EPOCHS=None
-MODEL_DIR=~/work/attentionnet/store_model/$PARAMS
+MODEL_DIR=store_model/$PARAMS
 
 python main.py \
 	--mode=$MODE \

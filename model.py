@@ -19,8 +19,6 @@ def accuracy4multilabel(labels, predictions):
 def attn_net(features, labels, mode, params):
     hidden_size = params['hidden_size']
     voca_size = params['voca_size']
-    bucket_sizes = params['bucket_sizes']
-    
     
     def residual_fn(x, y):
         return cl.layer_norm(x + tf.nn.dropout(
@@ -181,6 +179,7 @@ def attn_net(features, labels, mode, params):
             logits = logits + params['lexicon_effect'] * lexicon
         #predictions = tf.cast(tf.round(tf.sigmoid(logits)), tf.int32)
         prob = tf.sigmoid(logits)
+        prob = tf.Print(prob, [prob], 'This is prob')
         predictions = tf.to_int32(prob>0.5)
         # Provide an estimator spec for 'Modekeys.PREDICT'
         if mode == tf.estimator.ModeKeys.PREDICT:
@@ -208,8 +207,6 @@ def attn_net(features, labels, mode, params):
     learning_rate = tf.train.exponential_decay(learning_rate, tf.train.get_global_step(), 500, params['decay'], staircase = True)
     optimizer = tf.train.AdamOptimizer(learning_rate)
 
-    #train_op = optimizer.minimize(
-        #loss=loss, global_step=tf.train.get_global_step())
     grad_and_var = optimizer.compute_gradients(loss, tf.trainable_variables())
     
     # add histogram summary for gradient
