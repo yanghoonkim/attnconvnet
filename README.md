@@ -1,6 +1,6 @@
 # AttnConvnet at SemEval-2018 Task 1 : Attention-based Convolutional Neural Networks for Multi-label Emotion Classification
 
-Tensorflow implementation of [AttnConvnet](https://arxiv.org/pdf/1804.00831.pdf)
+Tensorflow implementation of [AttnConvnet](http://aclweb.org/anthology/S18-1019)
 
 Warning!! **Dirty version source code**
 
@@ -13,7 +13,7 @@ The source code will be beautified and restructured ASAP
 		- random initialized embeddings
 	
 	- Multi-head Dot-product Attention
-		- using partial code from google's [Transformer](https://github.com/tensorflow/tensor2tensor)
+		- using partial code from google's [Transformer](https://github.com/tensorflow/tensor2tensor) v1.0.8
 	
 	- 1-layer Convolutional Neural Network
 
